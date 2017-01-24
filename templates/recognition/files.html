@@ -1,0 +1,8 @@
+
+    {% for lines in files|slice(counter) %}
+        <div class="row">
+        {% for line in lines %}
+        <div class="col-xs-2" style="text-align:center"><a href="/static/{{ dirpath }}/{{ line.name }}"><img src="/static/{{ dirpath }}/{{ line.name }}" class="img-responsive" alt="{{ line.name }}"></a><input type="checkbox" name="elements"></div>
+        {% endfor %}
+        </div>
+    {% endfor %}

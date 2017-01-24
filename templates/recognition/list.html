@@ -1,0 +1,206 @@
+{% extends 'layouts/base.html' %}
+{% block content %}
+
+<script type="text/javascript">
+$(function(){
+{% if dir %}
+navigator.getUserMedia = (navigator.getUserMedia ||  navigator.webkitGetUserMedia || navigator.mozGetUserMedia || navigator.msGetUserMedia);
+if (navigator.getUserMedia) {
+
+    var canvas = document.createElement("canvas");
+    canvas.setAttribute('id','videoInput');
+    canvas.setAttribute('width', 1920);
+    canvas.setAttribute('height', 1080);
+    var contexdt = canvas.getContext("2d");
+    var video = document.getElementById("video");
+
+    videoObj = { "video": true };
+    errBack = function (error) {
+        console.log("Video capture error: ", error.code);
+	$("#webcam").html("摄像头检测失败，请检查相关驱动和设置");
+    };
+    navigator.getUserMedia(videoObj, function (stream) {
+        video.src = window.URL.createObjectURL(stream) || stream;;
+        video.play();
+    }, errBack);
+    var ws = new WebSocket('wss://' + document.domain + ':' + location.port + '/socket/collectsave');
+    ws.onopen=function(){
+        console.log("testing");
+    };
+    ws.onmessage = function(event){
+        data = eval('('+event.data+')');
+        if(data.stat==1){
+             window.location.reload();
+        };
+    };
+    var draw = function(){
+        try{
+            contexdt.drawImage(video,0,0, canvas.width, canvas.height);
+        }catch(e){
+            if (e.name == "NS_ERROR_NOT_AVAILABLE") {
+                return 0;
+            } else {
+                throw e;
+            }
+        }
+        //contexdt.drawImage(video,0,0, canvas.width, canvas.height);
+        var sdata = canvas.toDataURL("image/jpg");
+        var slen = sdata.length;
+        var j = 0;
+        var k = parseInt(slen/1650000) + 1;
+	var fname= (new Date()).valueOf();
+        for(var i=0;i<slen;i+=1650000){
+	        //var datas = JSON.stringify({"dirname":"{{ dir }}","image":sdata.substr(i,1650000),"ser":j,"_csrf_token":$("#_csrf_token").val(),"fname":fname,"len":k});
+	        var datas = JSON.stringify({"dirname":"{{ dir }}","image":sdata.substr(i,1650000),"ser":j,"fname":fname,"len":k,"dir":"{{ dir }}"});
+                if(video.src){
+                    ws.send(datas);
+                }
+/*
+		$.ajax({
+                      url:"{{ url_for('recognition.collectsave') }}",
+                      type:"POST",
+                      contentType: 'application/json;charset=UTF-8',
+                      data:datas,
+                      success:function(data){
+                          item = data.split("|");
+                          $("#_csrf_token").val(item[0]);
+                          $("#files").html(item[1]);
+                      }
+		});
+*/
+                j++;
+        };
+    };
+
+}else { 
+    $("#webcam").html("浏览器不支持此项操作");
+};
+{% endif %}
+    function selectcheck(){
+        var selected = new Array();
+        var elements = $("[name=elements]");
+        for(var i=0;i<elements.length;i++){
+            if(elements[i].checked){
+                selected.push(elements[i].getAttribute("dirname"));
+            };
+        };
+        if(selected.length==0){
+            alert("请先选择要移动的文件");
+            return 0;
+        }
+        $("#moves").click();
+        
+    };
+    $("#capture").click(function(){
+ 	if(typeof draw  === 'undefined'){
+	    return 0;
+        }else{
+	    draw();	
+	}           	
+    });
+    $("#removes").click(function(){
+        var selected = new Array();
+        var elements = $("[name=elements]");
+        for(var i=0;i<elements.length;i++){
+            if(elements[i].checked){
+                selected.push(elements[i].getAttribute("dirname"));
+            };
+        };
+        if(selected.length==0){
+            alert("请先选择要删除的文件");
+            return 0;
+        };
+        $("#dsource").val(selected.join("|"));
+    });
+    $("#stops").click(function(){
+        $("#status").val("stop");
+        document.forms.submit();
+    });
+    $("#starts").click(function(){
+        $("#status").val("start");
+        document.forms.submit();
+    });
+    $("#allbox").click(function(){
+        var elements = $("input[name=elements]");
+        for(var i=0;i<elements.length;i++){
+            if(this.checked){
+                elements[i].checked = true;
+                }else{
+                elements[i].checked =false;
+                };
+        };
+    });
+});
+</script>
+
+<div class="row">
+    <div class="col-lg-2">
+        <div class="form-horizontal">
+            <div class="panel panel-default">
+                <div class="panel-heading">目录结构</div>
+                <div class="panel-body">
+                    <div class="row"><div class="col-lg-12">
+                            <div id="treeview" class="treeview">
+                                    {% for dir in tdirs %}
+                                    <a href="{{ url_for('recognition.list') }}?dirname={{ dir.name }}" class="list-group-item"><i class="fa fa-folder fa-lg"></i>  {{ dir.name }}</a>
+                                    {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-10">
+<div class="row">
+<form role="form" method="post" action="{{ url_for('recognition.delete') }}">
+    <input name="_csrf_token" type="hidden" value="{{ csrf_token() }}" id="_csrf_token">
+    <input name="dir" type="hidden" value="{{ dir }}">
+    <input name="dsource" type="hidden" value="" id = "dsource">
+    <ul class="nav nav-tabs"><li><a href="#" data-toggle="modal" data-target="#foldername"><i class="fa fa-folder fa-2x"></i>   新建用户</a></li></ul>
+    <div class="row">
+	<div class="col-lg-6">
+            <table class="table table-bordered">
+            <tr><td colspan="3">
+                <div class="row" style="width:60%">
+                    <div class="col-md-6">
+                        <div class="checkbox"><label><input type="checkbox" id="allbox">{% if dirname %}<a href="{{ url_for('recognition.list') }}?did={{ dir }}">返回上一级</a>|<a href="{{ url_for('recognition.list') }}"> 全部文件</a>  >  {{ dir }} {% else %}<a href="{{ url_for('recognition.list') }}"> 全部文件</a>{% endif %}</label></div>
+                    </div>
+                    <div class="col-md-3"><button  class="btn btn-default" id="removes"><i class="fa fa-remove fa-fw"></i>删除</button>
+                    </div>
+                    <div class="col-md-3"><input type="hidden" id="moves" data-toggle="modal" data-target="#moveto">
+				<a href="javascript:void(0);"  class="btn btn-default" id="capture"><i class="icon-signin icon-large"></i>拍照</a>
+                    </div>
+                </div>
+            </td></tr>
+            {% for line in dirs %}
+            <tr><td><input type="checkbox" name="elements" dirname="{{ line.name }}" isdir=1><a href="{{ url_for('recognition.list') }}?dirname={{ line.name }}"><i class="fa fa-folder fa-lg"></i>  {{ line.name }}</a></td><td>{{ line.ctime }}</td></tr>
+            {% endfor %}
+            </table>
+            <div id="files">
+            {% for lines in files %}
+                <div class="row">
+                {% for line in lines %}
+                <div class="col-xs-4" style="text-align:center;" >
+                                <div class="row"><a href="/face/{{ dirpath }}/{{ line.name }}"><img src="/face/{{ dirpath }}/{{ line.name }}" class="img-responsive img-thumbnail" alt="{{ line.name }}"></a></div>
+                                <div class="row"><input type="checkbox" name="elements" dirname="{{ line.name }}" isdir=0></div></div>
+                {% endfor %}
+                </div>
+            {% endfor %}
+            </div>
+	</div>
+	<div class="col-lg-6">
+                <div id="webcam">
+                    <div class="row" style="text-align:left;">
+                        <video id="video" width="800" height="450"  ></video>
+                    </div>
+                </div>
+	</div>
+    </div>
+</form>
+</div>
+    </div>
+</div>
+{%  include 'recognition/newfolder.html' %}
+
+{% endblock%}

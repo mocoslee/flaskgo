@@ -1,0 +1,5 @@
+recursive-include templates *.html
+recursive-include */templates *.html
+recursive-include */management *
+recursive-include */templatetags *
+recursive-include locale *.mo *.po

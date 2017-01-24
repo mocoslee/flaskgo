@@ -1,0 +1,102 @@
+{% extends 'layouts/base.html' %}
+{% block content %}
+
+<div class="row">
+    <div class="col-lg-2">
+        <div class="form-horizontal">
+            <div class="panel panel-default">
+                <div class="panel-heading">图像采集</div>
+                <div class="panel-body">人脸检测</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-10">
+        <div id="webcam">
+            <div class="row">
+                <video id="video" width="800" height="600"  ></video>
+                <canvas id="overlay" width="800" height="600" style="display:none;"></canvas>
+                <canvas id="scale" width="320" height="240" style="display:none;"></canvas>
+	    </div>
+	    <div class="row" style="text-align:center;">
+	        <input type="button" class="btn btn-primary" value=" 检 测 " id="cap">
+        	<input type="button" class="btn btn-default" value=" 停 止 " id="caps">
+	    </div>
+        </div>
+    </div>
+</div>
+
+<script type="text/javascript">
+$(function(){
+
+
+navigator.getUserMedia = (navigator.getUserMedia ||  navigator.webkitGetUserMedia || navigator.mozGetUserMedia || navigator.msGetUserMedia);
+if (navigator.getUserMedia) {
+    var canvas = document.getElementById("overlay");
+    var contexdt = canvas.getContext("2d");
+    var video = document.getElementById("video");
+    var scale = document.getElementById("scale");
+    var sctx = scale.getContext("2d");
+    var wz = canvas.width / scale.width;
+    var wh = canvas.height / scale.height;
+
+    videoObj = { "video": true };
+    errBack = function (error) {
+        console.log("Video capture error: ", error.code);
+	$("#webcam").html("检测摄像头失败，请检查相关驱动和设置");
+    };
+    navigator.getUserMedia(videoObj, function (stream) {
+        video.src = window.URL.createObjectURL(stream) || stream;;
+        video.play();
+    }, errBack);
+
+    var ws = new WebSocket('wss://' + document.domain + ':' + location.port + '/socket/posshow');
+    ws.onopen=function(){
+        console.log("testing");
+    };
+    ws.onmessage = function(event){
+        data = eval('('+event.data+')');
+        contexdt.clearRect(0,0,canvas.width,canvas.height);
+        for(var i=0;i<data.pos.length;i++){
+            contexdt.strokeStyle = "#00CC00";         
+            contexdt.strokeRect(data.pos[i][0] * wz, data.pos[i][1] * wh, data.pos[i][2] * wz, data.pos[i][3] * wh);            
+        }
+    };
+
+    var draw = function(){
+        try{
+            sctx.drawImage(video,0,0, scale.width, scale.height);
+        }catch(e){
+            if (e.name == "NS_ERROR_NOT_AVAILABLE") {
+                return 0;
+            } else {
+                throw e;
+            }
+        }
+        //contexdt.drawImage(video,0,0, canvas.width, canvas.height);
+        var datas = JSON.stringify({"type":"data","image":scale.toDataURL("image/png")});
+        if(video.src){
+            ws.send(datas);
+        }
+    };
+    var sh;
+    $("#cap").click(function(){
+        canvas.style.display="block";
+        canvas.style.top = "0px";
+        canvas.style.zIndex = '100001';
+        canvas.style.position = "absolute";
+        sh = setInterval(draw,150);
+    });
+
+    $("#caps").click(function(){
+        clearInterval(sh);
+        canvas.style.display="none";
+        video.style.display = "block";
+    });
+
+}else { 
+    $("#webcam").html("浏览器不支持此项操作");
+};
+
+});
+</script>
+{% endblock%}

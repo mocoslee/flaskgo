@@ -1,0 +1,47 @@
+<div class="modal fade" id="foldername" tabindex="-1" role="dialog" aria-labelkedby="folderlabel" aria-hidden="true">
+<div class="modal-dialog">
+    <div class="modal-content">
+        <form role="form" method="post" action="{{ url_for('facemange.list') }}">
+            <input name="_csrf_token" type="hidden" value="{{ csrf_token() }}">
+            <input type="hidden" value="{{ dir }}" name="dir" >
+        <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+            <h4 class="mldal-title" id="flabel">新建文件夹</h4>
+        </div>
+        <div class="modal-body">
+            <fieldset>
+            <div class="form-group">
+                <label class="col-sm-2 control-label" for="fname">文件名</label>
+                <div class="col-sm-10">
+                    <input class="form-control" id="dirname" name="dirname" type="text">
+                </div>
+            </div>
+            </fieldset>
+        </div>
+        <div class="modal-footer">
+            <div class="form-group">
+            <input type="button"  class="btn btn-primary" value="确定" id = "newfolder">
+            <input type="button" class="btn btn-default" data-dismiss="modal" value="取消">
+            </div>
+        </div>
+            </form>
+    </div>
+</div>
+</div>
+<script type="text/javascript">
+$(function(){
+        $("#newfolder") .click(function(){
+            $.ajax({
+                url:"{{ url_for('facemange.list') }}",
+                type:"POST",
+                contentType:"application/json;charset=utf-8;",
+                data:{"_csrf_token":"{{ csrf_token() }}","dir":"{{ dir }}"},
+                dataType:"json",
+                success:function(data){
+                    
+                }
+
+                });
+            });       
+});
+</script>

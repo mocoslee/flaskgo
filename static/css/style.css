@@ -1,0 +1,94 @@
+.navbar-inverse .navbar-brand, .navbar-inverse .navbar-nav>li>a {
+    color: #bbb;
+}
+
+.spinner {
+    margin: 128px auto;
+    padding: 12px;
+    width: 200px;
+    font-size: 22px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    background-color: #fafafa;
+}
+
+#list {
+    display: none;
+}
+
+#info-dialog {
+    width: 90%;
+}
+
+#alertModal {
+    margin-top: 100px;
+}
+
+#info-block h4 {
+    margin: 32px 0 16px 0;
+}
+
+.info-detail {
+    padding: 10px;
+    word-break: break-all;
+    font-family: monospace;
+    font-size: 12px;
+    border: 1px solid #ddd;
+    height: 320px;
+    overflow-y: auto;
+}
+
+.info-none {
+    text-align: center;
+    padding-top: 20px;
+    font-size: 14px;
+}
+
+.table > thead > tr > td.active, .table > tbody > tr > td.active, .table > tfoot > tr > td.active,
+.table > thead > tr > th.active, .table > tbody > tr > th.active, .table > tfoot > tr > th.active,
+.table > thead > tr.active > td, .table > tbody > tr.active > td, .table > tfoot > tr.active > td,
+.table > thead > tr.active > th, .table > tbody > tr.active > th, .table > tfoot > tr.active > th {
+    background-color: #f2f2f2;
+}
+
+#table-list thead tr th, #table-list tbody tr td {
+    white-space: nowrap;
+}
+
+@media screen and (max-width: 1680px) {
+    .table .period {
+        display: inline-block;
+        max-width: 50px;
+        overflow: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+    }
+}
+
+.table_filter {
+    margin-bottom: 10px;
+}
+.table_filter label{
+    margin-right: 15px;
+}
+.table_filter span{
+    display: inline-block;
+    width: 150px;
+}
+
+.popover{
+    width:400px !important;
+}
+.popover-inner{
+    width:400px !important;
+}
+
+.ops-mark a {
+    margin-right: 5px;
+}
+
+.community_id {
+    color: #428BCA;
+    text-decoration: none;
+    cursor: pointer;
+}
