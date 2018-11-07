@@ -8,7 +8,7 @@ setuptools.setup(
     author = 'lining',
     author_email = 'mocoslee@gmail.com',
     url = '',
-    install_requires = ['Flask==0.10.1','uWSGI==2.0.11.1','requests','Flask-Script==0.3.1','tornado'],      
+    #install_requires = ['Flask==0.10.1','uWSGI==2.0.11.1','requests','Flask-Script==0.3.1','tornado'],      
     packages = ['apps','conf','templates','public','facemange'],  
     scripts = ["manager.py"],    
     include_package_data = True,    
